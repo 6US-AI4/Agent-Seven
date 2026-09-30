@@ -20,7 +20,9 @@ import {
   Key,
   X,
   Sun,
-  Moon
+  Moon,
+  UploadCloud,
+  ExternalLink
 } from 'lucide-react';
 import { marked } from 'marked';
 
@@ -77,6 +79,7 @@ export default function App() {
   const [geminiKey, setGeminiKey] = useState('');
   const [tavilyKey, setTavilyKey] = useState('');
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [showVercelModal, setShowVercelModal] = useState(false);
 
   useEffect(() => {
     const savedGemini = localStorage.getItem('agent_seven_gemini_key');
@@ -190,6 +193,14 @@ export default function App() {
           </button>
 
           <button
+            onClick={() => setShowVercelModal(true)}
+            className={`px-3.5 py-2 text-xs font-semibold transition-all rounded-xl flex items-center gap-1.5 border shadow-xs ${isDark ? 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'}`}
+          >
+            <UploadCloud className="w-3.5 h-3.5" />
+            <span>Deploy to Vercel</span>
+          </button>
+
+          <button
             onClick={() => setShowApiKeyModal(true)}
             className={`px-3.5 py-2 text-xs font-semibold transition-all rounded-xl flex items-center gap-1.5 border shadow-xs ${isDark ? 'text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 border-indigo-500/30' : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200'}`}
           >
@@ -234,10 +245,11 @@ export default function App() {
                     <span>Try Agent Playground</span>
                   </button>
                   <button 
-                    onClick={() => setActiveTab('tools')}
-                    className="px-5 py-2.5 text-sm font-semibold text-white bg-indigo-800/60 hover:bg-indigo-800 transition-all rounded-xl border border-indigo-600/50 backdrop-blur-sm"
+                    onClick={() => setShowVercelModal(true)}
+                    className="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-all rounded-xl flex items-center gap-2 shadow-lg"
                   >
-                    Explore Tools
+                    <UploadCloud className="w-4 h-4" />
+                    <span>Deploy to Vercel</span>
                   </button>
                 </div>
               </div>
@@ -437,7 +449,7 @@ export default function App() {
                       <div className="py-24 text-center space-y-3">
                         <Bot className={`w-12 h-12 mx-auto ${isDark ? 'text-slate-700' : 'text-slate-300'}`} />
                         <div className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>No agent run executed yet.</div>
-                        <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Configure your prompt and click Run Agent Task to watch the LangChain loop in action.</p>
+                        <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Configure your prompt and press Enter to watch the LangChain loop in action.</p>
                       </div>
                     )}
 
@@ -552,6 +564,66 @@ export default function App() {
 
       </main>
 
+      {/* Vercel Deployment Modal */}
+      {showVercelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <div className={`max-w-lg w-full p-6 rounded-2xl border space-y-6 shadow-2xl transition-colors ${isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UploadCloud className="w-5 h-5 text-emerald-600" />
+                <h2 className="text-base font-bold">Deploying to Vercel</h2>
+              </div>
+              <button onClick={() => setShowVercelModal(false)} className={`transition-colors ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs leading-relaxed">
+              <p className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                This repository is fully prepared for Vercel deployment with a pre-configured <code className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono">vercel.json</code> file.
+              </p>
+
+              <div className={`p-4 rounded-xl border space-y-2 ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                <strong className={`block text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Deployment Steps:</strong>
+                <ol className="list-decimal list-inside space-y-1.5 text-slate-500 dark:text-slate-400">
+                  <li>Push this project to your GitHub repository.</li>
+                  <li>Log in to <a href="https://vercel.com" target="_blank" rel="noreferrer" className="text-indigo-500 underline inline-flex items-center gap-0.5">Vercel Dashboard <ExternalLink className="w-3 h-3" /></a>.</li>
+                  <li>Click <strong>Add New → Project</strong> and import your GitHub repository.</li>
+                  <li>Vercel will automatically detect <strong>Vite</strong> as the Framework Preset.</li>
+                  <li>Click <strong>Deploy</strong>!</li>
+                </ol>
+              </div>
+
+              <div className={`p-4 rounded-xl border space-y-2 ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                <strong className={`block text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Environment Variables (Optional):</strong>
+                <p className="text-slate-500 dark:text-slate-400">
+                  You can set <code className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono">GEMINI_API_KEY</code> in your Vercel Project Settings under <strong>Environment Variables</strong>, or users can enter their own API keys securely in the app UI.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button 
+                type="button" 
+                onClick={() => setShowVercelModal(false)} 
+                className={`px-5 py-2 text-xs font-semibold rounded-xl transition-colors ${isDark ? 'text-slate-300 bg-slate-800 hover:bg-slate-700' : 'text-slate-700 bg-slate-200 hover:bg-slate-300'}`}
+              >
+                Close
+              </button>
+              <a 
+                href="https://vercel.com/new" 
+                target="_blank" 
+                rel="noreferrer"
+                className="px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors shadow-md inline-flex items-center gap-1.5"
+              >
+                <span>Open Vercel New Project</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* API Key Modal */}
       {showApiKeyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
@@ -586,7 +658,7 @@ export default function App() {
                   value={tavilyKey}
                   onChange={(e) => setTavilyKey(e.target.value)}
                   placeholder="tvly-..." 
-                  className={`w-full rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 font-mono border transition-colors ${isDark ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                className={`w-full rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 font-mono border transition-colors ${isDark ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
                 />
                 <p className="text-[10px] text-slate-500">Optional. Enables live Tavily web search tool execution.</p>
               </div>
