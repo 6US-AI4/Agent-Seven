@@ -1,0 +1,6 @@
+{
+  "name": "Agent Seven",
+  "description": "Agent Seven: Next-Generation Autonomous AI Agent Command Center & Multi-Agent Orchestration Suite powered by Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
