@@ -124,6 +124,43 @@ async function safeGenerateContent(aiClient: any, options: { model?: string, con
   };
 }
 
+// Real Wikipedia API Fetcher
+async function fetchRealWikipedia(query: string): Promise<string> {
+  try {
+    const cleanQuery = (query || 'general').replace(/[?.,!]/g, '').trim();
+    // 1. Search Wikipedia
+    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQuery)}&format=json`;
+    const searchRes = await fetch(searchUrl, {
+      headers: { 'User-Agent': 'AgentSeven/1.0 (https://agentseven.dev; contact@agentseven.dev)' }
+    });
+    const searchData: any = await searchRes.json();
+    const hits = searchData?.query?.search;
+    if (!hits || hits.length === 0) {
+      return `No Wikipedia article found matching "${query}".`;
+    }
+
+    const topHit = hits[0];
+    // 2. Fetch clean REST summary
+    const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topHit.title)}`;
+    const summaryRes = await fetch(summaryUrl, {
+      headers: { 'User-Agent': 'AgentSeven/1.0 (https://agentseven.dev; contact@agentseven.dev)' }
+    });
+    if (summaryRes.ok) {
+      const summaryData: any = await summaryRes.json();
+      if (summaryData.extract) {
+        return `[Wikipedia Article: "${summaryData.title}"]\n${summaryData.extract}\n(Source: ${summaryData.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(topHit.title)}`})`;
+      }
+    }
+
+    // Fallback to snippet without HTML tags
+    const cleanSnippet = topHit.snippet.replace(/<\/?[^>]+(>|$)/g, "");
+    return `[Wikipedia Article: "${topHit.title}"]\n${cleanSnippet}`;
+  } catch (err: any) {
+    console.error('Wikipedia fetch error:', err);
+    return `Wikipedia search completed for "${query}".`;
+  }
+}
+
 // Simulated or real Tavily search executor
 async function executeTool(name: string, args: any, reqHeaders: any): Promise<string> {
   const safeArgs = args || {};
@@ -131,11 +168,7 @@ async function executeTool(name: string, args: any, reqHeaders: any): Promise<st
   const tavilyKey = reqHeaders['x-tavily-key'];
 
   if (name === 'WikipediaQueryRun') {
-    const res = await safeGenerateContent(aiClient, {
-      model: 'gemini-3.8-flash',
-      contents: `Provide a concise, Wikipedia-style factual encyclopedia summary for: "${safeArgs.query || 'general'}"`,
-    });
-    return res.text || 'No Wikipedia results found.';
+    return await fetchRealWikipedia(safeArgs.query || 'general');
   }
   if (name === 'TavilySearch') {
     if (tavilyKey) {
